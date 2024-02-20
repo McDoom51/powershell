@@ -1,17 +1,26 @@
 <#
-    Copyright 2024 @ McDoom
+    This PowerShell script is designed to monitor the network connection status 
+    by periodically checking the ping status to a specified target computer or IP address. 
+    It employs a loop structure to continuously monitor the network status in real-time.
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+    If packet loss is detected, the script responds in the following manner:
+    - After 30 seconds of continuous packet loss, it switches to a Wi-Fi connection 
+      using the SwitchToWifi function.
+    - If packet loss persists for 2 minutes while on Wi-Fi, it switches back to 
+      the Ethernet connection using the SwitchToEthernet function.
 
-        http://www.apache.org/licenses/LICENSE-2.0
+    The script ensures that the ping tests are performed specifically on the 
+    Ethernet interface to maintain consistent network monitoring. The CheckPingStatus 
+    function uses the Test-Connection cmdlet with the -InterfaceAlias parameter 
+    to target the Ethernet interface explicitly.
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This script is intended to provide automated network failover capabilities 
+    in scenarios where network reliability is critical. It can be customized 
+    and integrated into various network management systems or used as a standalone 
+    solution for managing network connections.
+
+    Copyright 2024 Christian de Linde Sønderskov
+    Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 #>
 
 # Fetch logged in user
@@ -34,7 +43,7 @@ $pingTarget = "8.8.8.8"
 $logFilePath = "C:\Path\To\Log\$logFileName"
 
 
-# Specify which WiFi network
+# Connect to specific Wi-Fi network
 $wifiName = ""
 $wifiSSID = ""
 
