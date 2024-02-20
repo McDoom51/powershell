@@ -43,7 +43,7 @@ $pingTarget = "8.8.8.8"
 $logFilePath = "C:\Path\To\Log\$logFileName"
 
 
-# Connect to specific Wi-Fi network
+# Specify which WiFi network
 $wifiName = ""
 $wifiSSID = ""
 
@@ -105,38 +105,32 @@ function CheckPingStatus {
 
 # Main loop
 $packetLossDuration = [TimeSpan]::Zero
+$ethernetUpDuration = [TimeSpan]::Zero
 $switchedToWifiTime = [DateTime]::MinValue
 
 while ($true) {
     $pingResult = CheckPingStatus
-    if (-not $pingResult) {
-        # Increment packet loss into 10 seconds duration
-        $packetLossDuration += [TimeSpan]::FromSeconds(10)
-        
-        # If packet loss duration exceeds 2 minutes and currently on Wi-Fi, switch back to Ethernet
-        if ($packetLossDuration -ge [TimeSpan]::FromMinutes(2) -and $switchedToWifiTime -ne [DateTime]::MinValue) {
+    if ($pingResult) {
+        # Increment Ethernet uptime duration by 10 seconds
+        $ethernetUpDuration += [TimeSpan]::FromSeconds(10)
+
+        # If Ethernet uptime duration exceeds 2 minutes and currently on Wi-Fi, switch back to Ethernet
+        if ($ethernetUpDuration -ge [TimeSpan]::FromMinutes(2) -and $switchedToWifiTime -ne [DateTime]::MinValue) {
             SwitchToEthernet
-            Log "Switched back to Ethernet after 2 minutes of packet loss"
-            $packetLossDuration = [TimeSpan]::Zero
+            Log "Switched back to Ethernet after 2 minutes of successful ping responses"
+            $ethernetUpDuration = [TimeSpan]::Zero
             $switchedToWifiTime = [DateTime]::MinValue
-        } elseif ($packetLossDuration -ge [TimeSpan]::FromSeconds(30)) {
-            # If packet loss duration exceeds 30 seconds, switches to Wi-Fi
-            SwitchToWifi
-            $switchedToWifiTime = Get-Date
-            Log "Switched to Wi-Fi due to packet loss"
-        } else {
-            Log "Packet loss detected"
         }
     } else {
-        # Reset packet loss duration
-        $packetLossDuration = [TimeSpan]::Zero
+        # Reset Ethernet uptime duration
+        $ethernetUpDuration = [TimeSpan]::Zero
 
         # If switched to Wi-Fi earlier and now back to Ethernet, reset the time
         if ($switchedToWifiTime -ne [DateTime]::MinValue) {
             $switchedToWifiTime = [DateTime]::MinValue
         }
     }
-    
+
     # Wait for 10 seconds before checking ping status again
     Start-Sleep -Seconds 10
 }
