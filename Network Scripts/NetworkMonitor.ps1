@@ -43,6 +43,11 @@ $pingTarget = "8.8.8.8"
 $logFilePath = "C:\Path\To\Log\$logFileName"
 
 
+# Define WiFi Name and SSID
+$wifiName = ""
+$wifiSSID = ""
+
+
 # Get the interface index of the default Ethernet interface
 try {
     $ethernetInterfaceIndex = Get-NetAdapter | Where-Object { $_.InterfaceDescription -like "*Ethernet*" -and $_.Status -eq "Up" } | Select-Object -ExpandProperty ifIndex
