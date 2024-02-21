@@ -32,7 +32,7 @@ $computername = $env:COMPUTERNAME
 
 
 # Generate log file name with prefix "user - computername" and current date and time
-$logFileName = "$username-$computername-$(Get-Date -Format 'dd-MM-yyyy_HH_mm').log"
+$logFileName = "networkmonitor_$username_$computername.log"
 
 
 # Define target address
@@ -66,33 +66,48 @@ function Log {
 # Function to switch traffic to Wi-Fi
 function SwitchToWifi {
     try {
-        # Define a hashtable to link Wi-Fi names with their SSIDs
-        $wifiNameToSSID = @{
-            "WiFiName1" = "SSID1"
-            "WiFiName2" = "SSID2"
-            # Add more Wi-Fi names and their corresponding SSIDs as needed
-        }
-
-        # Get the list of known Wi-Fi networks and their SSIDs
-        $wifiNetworks = netsh wlan show networks mode=Bssid | Select-String -Pattern "SSID [0-9]+:" | ForEach-Object { $_ -replace "SSID [0-9]+: ", "" }
-
-        # Check if any of the known Wi-Fi names match the allowed Wi-Fi names
-        $allowedWiFiNames = $wifiNameToSSID.Keys
-        $matchingWiFiName = $allowedWiFiNames | Where-Object { $wifiNetworks -contains $_ }
-
-        if ($matchingWiFiName) {
-            $matchingSSID = $wifiNameToSSID[$matchingWiFiName]
-
-            # Connect to the Wi-Fi network with the matching SSID
-            netsh wlan connect name="$matchingSSID" ssid="$matchingSSID"
-            Log "Connected to Wi-Fi network: $matchingWiFiName (SSID: $matchingSSID)"
-        } else {
-            Log "No allowed Wi-Fi network found."
-        }
+        # Connect to specific Wi-Fi network
+        netsh wlan connect name=$wifiName ssid=$wifiSSID
+        
+        # Limit traffic on Ethernet to only ping requests
+        New-NetQosPolicy -InterfaceIndex $ethernetInterfaceIndex -Name "PingOnly" -AppPathNameMatchCondition "icmp" -ThrottleRateActionBitsPerSecond 1024
     } catch {
-        Log "Error switching to Wi-Fi: $_" -Type "Error"
+        Log "Error switching to Wi-Fi: $_"
     }
 }
+
+
+# Function to switch to a allowed WiFi SSID, if running different SSID's for different computers
+# It will only connect to the allowed SSID's from the array $wifiNameToSSID and match with known SSID's
+#function SwitchToWifi {
+#    try {
+#        # Define a hashtable to link Wi-Fi names with their SSIDs
+#        $wifiNameToSSID = @{
+#            "WiFiName1" = "SSID1"
+#            "WiFiName2" = "SSID2"
+#            # Add more Wi-Fi names and their corresponding SSIDs as needed
+#        }
+#
+#        # Get the list of known Wi-Fi networks and their SSIDs
+#        $wifiNetworks = netsh wlan show networks mode=Bssid | Select-String -Pattern "SSID [0-9]+:" | ForEach-Object { $_ -replace "SSID [0-9]+: ", "" }
+#
+#        # Check if any of the known Wi-Fi names match the allowed Wi-Fi names
+#        $allowedWiFiNames = $wifiNameToSSID.Keys
+#        $matchingWiFiName = $allowedWiFiNames | Where-Object { $wifiNetworks -contains $_ }
+#
+#        if ($matchingWiFiName) {
+#            $matchingSSID = $wifiNameToSSID[$matchingWiFiName]
+#
+#            # Connect to the Wi-Fi network with the matching SSID
+#            netsh wlan connect name="$matchingSSID" ssid="$matchingSSID"
+#            Log "Connected to Wi-Fi network: $matchingWiFiName (SSID: $matchingSSID)"
+#        } else {
+#            Log "No allowed Wi-Fi network found."
+#        }
+#    } catch {
+#        Log "Error switching to Wi-Fi: $_" -Type "Error"
+#    }
+#}
 
 
 # Function to switch traffic back to Ethernet
