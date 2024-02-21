@@ -83,8 +83,8 @@ function SwitchToWifi {
 }
 
 
-# Function to switch to a allowed WiFi SSID, if running different SSID's for different computers
-# It will only connect to the allowed SSID's from the array $wifiNameToSSID and match with known SSID's
+# Function to switch to an allowed WiFi SSID, if running different SSID's for different computers
+# It will only connect to an allowed SSID's from the array $wifiNameToSSID and match with known SSID's
 #function SwitchToWifi {
 #    try {
 #        # Define a hashtable to link Wi-Fi names with their SSIDs
