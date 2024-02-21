@@ -23,7 +23,8 @@
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 #>
 
-# Fetch logged in user
+
+# Fetch current user
 $username = $env:USERNAME
 
 
@@ -31,7 +32,7 @@ $username = $env:USERNAME
 $computername = $env:COMPUTERNAME
 
 
-# Generate log file name with prefix "user - computername" and current date and time
+# Generate log file name with prefix "user_computername"
 $logFileName = "networkmonitor_$username_$computername.log"
 
 
